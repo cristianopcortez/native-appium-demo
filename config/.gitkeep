@@ -1,0 +1,10 @@
+Place environment-specific secrets in this folder (they are gitignored).
+The docker-compose.yml mounts this directory at /root/config inside the container.
+
+Expected files:
+  - my-debug-keystore.jks   (debug keystore used to sign the rebuilt Espresso test APK;
+                             must match the keystore used to sign app-debug.apk)
+
+See config/espresso-build-config.example.json for a reference of the full
+espressoBuildConfig structure. The live configuration is embedded directly in
+AndroidDriverManager.java and does not need to be a file here.

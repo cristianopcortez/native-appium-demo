@@ -1,0 +1,53 @@
+﻿target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/test/resources/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+/.idea/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Project - test binaries and secrets ###
+apks/*.apk
+config/*.jks
+config/*.keystore
+config/*.p12
+config/espresso-build-config.json
+config/additional-android-test-dependencies.json
+
+# Keep folder placeholders and example configs in version control
+!apks/.gitkeep
+!config/.gitkeep
+!config/*.example.json

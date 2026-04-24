@@ -1,0 +1,56 @@
+services:
+  android-appium:
+    build: .
+    image: native-appium-demo-android:latest
+    container_name: android-container
+    privileged: true
+    ports:
+      - "4723:4723"   # Appium server
+      - "6080:6080"   # noVNC — open http://localhost:6080 to watch the emulator
+    environment:
+      EMULATOR_DEVICE: "Samsung Galaxy S10"
+      WEB_VNC: "true"
+      APPIUM: "true"
+      EMULATOR_ARGS: "-gpu swiftshader_indirect -no-audio -no-boot-anim"
+      CORES: 4
+      RAM: 4096
+    volumes:
+      # APK under test — copy your app-debug.apk into ./apks.
+      # Mounted under /home/androidusr because the Appium server inside
+      # the container runs as `androidusr` and cannot read /root (mode 700).
+      # Mounted read-write because the Espresso driver re-signs the APK
+      # in place (apksigner does a Files.move() over the original file),
+      # so the bind-mounted APK on the host will be modified by a test run.
+      - ./apks:/home/androidusr/apks
+      # Debug keystore used by Espresso to sign the rebuilt test APK.
+      # Keep ./config/my-debug-keystore.jks matching the app's signing key.
+      - ./config:/home/androidusr/config:ro
+
+    # --- Hardware acceleration ---
+    # Requires /dev/kvm exposed by the host (Linux, or Windows/WSL2 with
+    # nested virtualization enabled and Docker Desktop WSL2 backend).
+    # Without this the emulator falls back to software rendering via
+    # swiftshader_indirect, which is effectively unusable on Windows.
+    devices:
+      - /dev/kvm
+
+  # Dockerized Chrome for the Selenium suite. Kept behind the `web` compose
+  # profile so the default `docker compose up -d` still brings up only the
+  # Android stack (matching the dev loop where Chrome runs on the host via
+  # WebDriverManager). Opt in with:
+  #
+  #   docker compose --profile web up -d
+  #   mvn test -Pdockerized-web
+  #
+  # Watch the browser at http://localhost:7900 (password: secret).
+  selenium-chrome:
+    image: selenium/standalone-chrome:4.27.0
+    container_name: selenium-chrome
+    profiles: ["web"]
+    shm_size: "2g"
+    ports:
+      - "4444:4444"   # WebDriver endpoint (http://localhost:4444/wd/hub)
+      - "7900:7900"   # noVNC viewer
+    environment:
+      SE_NODE_MAX_SESSIONS: 1
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"

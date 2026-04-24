@@ -1,0 +1,3 @@
+Place the app-debug.apk of the app under test in this folder.
+The docker-compose.yml mounts this directory at /root/apks inside the container.
+Expected file: app-debug.apk

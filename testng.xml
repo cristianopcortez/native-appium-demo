@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="native-appium-demo">
+
+    <test name="Web tests (Selenium + Chrome)">
+        <classes>
+            <class name="br.com.ccortez.tests.ChromeTest"/>
+        </classes>
+    </test>
+
+    <test name="Android native tests (Espresso + Jetpack Compose)">
+        <classes>
+            <class name="br.com.ccortez.tests.AndroidAppTests"/>
+        </classes>
+    </test>
+
+    <test name="Mixed-driver smoke tests (Web + Android in the same JVM)">
+        <classes>
+            <class name="br.com.ccortez.tests.MixedDriverTests"/>
+        </classes>
+    </test>
+
+</suite>

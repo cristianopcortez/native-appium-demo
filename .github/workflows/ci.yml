@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new commit is pushed to the same branch/PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compile & verify (no UI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Validate docker-compose.yml
+        run: docker compose config --quiet
+
+      # Full UI suite needs a running Android emulator + Appium and is not
+      # executed here. We compile the production and test sources and package
+      # the artifact so type errors and dependency drift still fail the build.
+      - name: Compile production & test sources
+        run: mvn -B -ntp clean test-compile
+
+      - name: Build jar (skip tests)
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-appium-taxi-jar
+          path: target/*.jar
+          if-no-files-found: error
+          retention-days: 7
