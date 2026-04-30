@@ -54,7 +54,9 @@ no machine-specific paths hard-coded.
 - **Google Chrome on the host** — only required for Mode A (Chrome on host).
   Mode B ships Chrome inside a container and has no host browser requirement.
 - The `app-debug.apk` of the app under test (this project targets
-  [`DesafioShopperAppTaxi`](https://github.com/) — a Jetpack Compose sample).
+  [`Taxi`](https://github.com/cristianopcortez/Taxi) — a Jetpack Compose sample).
+  Clone that repository and run `./gradlew :app:assembleDebug` to generate the APK,
+  then drop `app-debug.apk` into the `apks/` folder of this project.
 - The debug keystore used to sign that APK (`my-debug-keystore.jks`).
 
 ---
@@ -222,8 +224,13 @@ mvn test -Pdockerized-web
 The Maven profile exports `SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub`,
 and `WebDriverFactory` switches to `RemoteWebDriver`. The browser runs inside
 the `selenium/standalone-chrome` container so its version is pinned and
-decoupled from whatever Chrome is installed on the host. You can watch the
-session live at <http://localhost:7900> (password: `secret`).
+decoupled from whatever Chrome is installed on the host.
+
+**Watching the web tests (Mode B):** while `mvn test -Pdockerized-web` runs,
+open **<http://localhost:7900/>** in a normal browser — that is the
+container’s **noVNC** viewer (same idea as the Android emulator at port 6080).
+Log in with password `secret` to see Chrome open, navigate, and tear down as
+each test runs.
 
 ### Running from IntelliJ
 
