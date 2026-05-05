@@ -60,12 +60,16 @@ public class AndroidDriverManager {
      * as the app under test, hence the {@code signingConfig} block. The
      * {@code additionalAndroidTestDependencies} list mirrors the Compose /
      * AndroidX versions used by {@code DesafioShopperAppTaxi} (1.7.5).</p>
+     *
+     * <p>{@code androidGradlePlugin} must match the app under test (see that
+     * project's {@code gradle/libs.versions.toml} {@code agp}): mismatches cause
+     * Gradle to fail resolving {@code com.android.application}.</p>
      */
     private static final String ESPRESSO_BUILD_CONFIG_JSON = ""
             + "{"
             + "\"toolsVersions\":{"
             +     "\"gradle\":\"8.7\","
-            +     "\"androidGradlePlugin\":\"8.2.2\""
+            +     "\"androidGradlePlugin\":\"8.6.0\""
             + "},"
             + "\"signingConfig\":{"
             +     "\"storeFile\":\"" + KEYSTORE_PATH_IN_CONTAINER + "\","
