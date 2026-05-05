@@ -158,12 +158,39 @@ Example — temporarily override the keystore password for a single run:
 $env:KEYSTORE_PASSWORD="my-real-password"; mvn test
 ```
 
-The Espresso build configuration (Compose dependency versions, Gradle / AGP
-versions, signing block) is embedded directly in
-`AndroidDriverManager.java` and passed to Appium as the inline
-`appium:espressoBuildConfig` capability — so no JSON file needs to exist
-inside the container. A human-readable reference lives at
-`config/espresso-build-config.example.json`.
+The Espresso build configuration (Compose/AndroidX coordinates for the server
+test APK, signing block) is embedded directly in `AndroidDriverManager.java`
+and passed to Appium as the inline `appium:espressoBuildConfig` capability —
+so no JSON file needs to exist inside the container. A human-readable
+reference lives at `config/espresso-build-config.example.json`.
+
+**Espresso driver 8.x:** the bundled `espresso-server` project ships its own
+Gradle + Android Gradle Plugin defaults (see the driver's
+`espresso-server/gradle/`). Do **not** set `toolsVersions.gradle` /
+`toolsVersions.androidGradlePlugin` to mirror the Taxi app's `libs.versions.toml`:
+that app uses a different Gradle project; forcing AGP 8.6 while the driver
+expects Gradle 9 + AGP 9 causes failures such as plugin classpath conflicts or
+`com.android.application` resolution errors under `/tmp/espresso-server-*/`.
+Keep Gradle/AGP unset so the driver applies its defaults; align libraries via
+`additionalAndroidTestDependencies` (and signing via `signingConfig`) so the
+server matches the Compose stack of the APK under test.
+
+#### Local check with Appium + Espresso driver (latest)
+
+1. Install / upgrade Appium 2 and the Espresso driver (no version pin):
+   `npm i -g appium@latest && appium driver install espresso`  
+   (Re-run `appium driver install espresso` after upgrades; use
+   `appium driver update espresso` if already installed.)
+2. Start an emulator or device with the same API level you target in CI.
+3. Ensure `app-debug.apk` and the matching debug keystore paths match your
+   env / `DriverTestConfig` (when not using Docker, override
+   `KEYSTORE_PATH_IN_CONTAINER` or embed paths appropriate for the host).
+4. Run the suite with `appium:forceAppiumRebuild` already enabled in code;
+   first session may take longer while the server APK compiles.
+
+CI (e.g. Codemagic) can replace `appium driver install espresso@7.2.1` with
+`appium driver install espresso` once this project's `espressoBuildConfig`
+no longer overrides Gradle/AGP.
 
 ---
 
@@ -302,7 +329,7 @@ setup that survives restarts:
 ### Design note
 
 The Android emulator is always containerised because its environment is
-heavy and specific (Android SDK, AVD, Gradle/AGP, `/dev/kvm`). Chrome, in
+heavy and specific (Android SDK, AVD, Espresso server Gradle builds, `/dev/kvm`). Chrome, in
 contrast, is cheap to run on the host and that is closer to what a real user
 experiences — so containerising it is offered as an _opt-in_ rather than the
 default. The test JVM stays the sole orchestrator and talks to both targets
@@ -327,6 +354,9 @@ _File → Project Structure → Project_ and select a JDK 17 installation.
 Harmless Selenium warning — your installed Chrome is newer than the bundled
 DevTools client. It does not break test execution. If it bothers you, add
 `selenium-devtools-v<your-chrome-major>` to `pom.xml`.
+
+**Espresso server / Gradle: plugin already on classpath, or failed to resolve `com.android.application`**
+You likely pinned `toolsVersions.gradle` or `toolsVersions.androidGradlePlugin` in `appium:espressoBuildConfig` to match the **app** project's AGP while using **Espresso driver 8.x**, which bundles Gradle 9 + AGP 9 for its separate `espresso-server` build. Drop those overrides so the driver uses its defaults (see `AndroidDriverManager` in this repo), ensure the Appium host uses JDK 17+ for that Gradle run, then retry with `appium:forceAppiumRebuild` enabled.
 
 **Emulator stuck on boot**
 Open <http://localhost:6080> to see what the emulator is doing. On Windows

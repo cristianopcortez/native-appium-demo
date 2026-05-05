@@ -61,16 +61,17 @@ public class AndroidDriverManager {
      * {@code additionalAndroidTestDependencies} list mirrors the Compose /
      * AndroidX versions used by {@code DesafioShopperAppTaxi} (1.7.5).</p>
      *
-     * <p>{@code androidGradlePlugin} must match the app under test (see that
-     * project's {@code gradle/libs.versions.toml} {@code agp}): mismatches cause
-     * Gradle to fail resolving {@code com.android.application}.</p>
+     * <p>We intentionally omit {@code toolsVersions} ({@code gradle},
+     * {@code androidGradlePlugin}, etc.): the Espresso server is built from the
+     * driver's bundled {@code espresso-server} project (Gradle/AGP pinned there),
+     * not from the app under test's Gradle tree. Overriding those versions to
+     * match the app's AGP (e.g. 8.6) conflicts with Espresso driver 8.x defaults
+     * (Gradle 9 + AGP 9) and breaks the server build in {@code /tmp/espresso-server-*}.
+     * Align dependency coordinates via {@code additionalAndroidTestDependencies}
+     * instead.</p>
      */
     private static final String ESPRESSO_BUILD_CONFIG_JSON = ""
             + "{"
-            + "\"toolsVersions\":{"
-            +     "\"gradle\":\"8.7\","
-            +     "\"androidGradlePlugin\":\"8.6.0\""
-            + "},"
             + "\"signingConfig\":{"
             +     "\"storeFile\":\"" + KEYSTORE_PATH_IN_CONTAINER + "\","
             +     "\"storePassword\":\"" + KEYSTORE_PASSWORD + "\","
