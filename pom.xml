@@ -81,12 +81,14 @@
         <!--
           Run the Selenium suite against the dockerized Chrome brought up by
           the `web` compose profile instead of a browser installed on the
-          host. Activate with: mvn test -Pdockerized-web
+          host. Sets SELENIUM_REMOTE_URL and appium.app for Surefire.
+          Activate with: mvn test -Pdockerized-web
         -->
         <profile>
             <id>dockerized-web</id>
             <properties>
                 <selenium.remote.url>http://localhost:4444/wd/hub</selenium.remote.url>
+                <appium.app>/home/androidusr/apks/app-debug.apk</appium.app>
             </properties>
             <build>
                 <plugins>
@@ -96,6 +98,7 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <SELENIUM_REMOTE_URL>${selenium.remote.url}</SELENIUM_REMOTE_URL>
+                                <appium.app>${appium.app}</appium.app>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

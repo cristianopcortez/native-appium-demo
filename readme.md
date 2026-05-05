@@ -37,7 +37,9 @@ no machine-specific paths hard-coded.
 ├── config/                    # (gitignored) drop my-debug-keystore.jks here
 │   └── espresso-build-config.example.json
 ├── src/
-│   ├── main/java/br/com/ccortez/drivers/AndroidDriverManager.java
+│   ├── main/java/br/com/ccortez/
+│   │   ├── config/DriverTestConfig.java
+│   │   └── drivers/AndroidDriverManager.java
 │   └── test/java/br/com/ccortez/
 │       ├── pages/             # Page Objects
 │       └── tests/             # Test classes
@@ -123,8 +125,20 @@ no machine-specific paths hard-coded.
 
 ## Configuration
 
-`AndroidDriverManager` reads the following environment variables, with safe
-defaults so the suite works out of the box:
+[`DriverTestConfig`](src/main/java/br/com/ccortez/config/DriverTestConfig.java)
+centralises the JVM system properties / environment variables shared by the
+drivers:
+
+| Key | Source order | Purpose |
+|---|---|---|
+| `appium.app` | system property, then `APK_PATH_IN_CONTAINER` env, then default | APK path as seen by the Appium process (in-container path when using Docker). If you omit `-Dappium.app`, behaviour matches the previous default chain (env + `/home/androidusr/apks/app-debug.apk`). |
+| `SELENIUM_REMOTE_URL` | system property, then env | When set (e.g. `http://localhost:4444/wd/hub`), `WebDriverFactory` uses `RemoteWebDriver`. When unset / blank, local `ChromeDriver` via WebDriverManager. |
+
+The Maven profile `dockerized-web` sets both via Surefire `systemPropertyVariables`
+(see `pom.xml`).
+
+`AndroidDriverManager` still reads these environment variables for Appium device
+and signing settings:
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -132,17 +146,11 @@ defaults so the suite works out of the box:
 | `ANDROID_DEVICE_NAME` | `Samsung Galaxy S10` | Emulator profile |
 | `ANDROID_UDID` | `emulator-5554` | ADB identifier |
 | `ANDROID_PLATFORM_VERSION` | `9` | Android version inside the container |
-| `APK_PATH_IN_CONTAINER` | `/home/androidusr/apks/app-debug.apk` | APK path as seen by Appium |
+| `APK_PATH_IN_CONTAINER` | `/home/androidusr/apks/app-debug.apk` (if unset) | Second choice for the APK path when the `appium.app` system property is not set. |
 | `KEYSTORE_PATH_IN_CONTAINER` | `/home/androidusr/config/my-debug-keystore.jks` | Keystore path as seen by Appium |
 | `KEYSTORE_PASSWORD` | `mypassword` | Override in real use |
 | `KEY_ALIAS` | `my-debug-alias` | Override in real use |
 | `KEY_PASSWORD` | `mypassword` | Override in real use |
-
-`WebDriverFactory` reads one extra variable for the Selenium suite:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `SELENIUM_REMOTE_URL` | _(unset)_ | When set (e.g. `http://localhost:4444/wd/hub`), the suite uses `RemoteWebDriver` against that endpoint. When unset, a local `ChromeDriver` is started via WebDriverManager using the host's Chrome. |
 
 Example — temporarily override the keystore password for a single run:
 
@@ -188,7 +196,8 @@ Chrome either on the host _or_ inside a second container — see
 
 The Selenium suite supports two interchangeable modes, selected at runtime by
 the `SELENIUM_REMOTE_URL` env var / system property (see
-[`WebDriverFactory`](src/test/java/br/com/ccortez/drivers/WebDriverFactory.java)):
+[`DriverTestConfig`](src/main/java/br/com/ccortez/config/DriverTestConfig.java)
+and [`WebDriverFactory`](src/test/java/br/com/ccortez/drivers/WebDriverFactory.java)):
 
 ### Mode A — Chrome on the host _(default, fast dev loop)_
 
@@ -221,8 +230,9 @@ Then run the tests against the grid:
 mvn test -Pdockerized-web
 ```
 
-The Maven profile exports `SELENIUM_REMOTE_URL=http://localhost:4444/wd/hub`,
-and `WebDriverFactory` switches to `RemoteWebDriver`. The browser runs inside
+The Maven profile exports `SELENIUM_REMOTE_URL` and `appium.app` (same default
+APK path as local Docker). `WebDriverFactory` switches to `RemoteWebDriver`.
+The browser runs inside
 the `selenium/standalone-chrome` container so its version is pinned and
 decoupled from whatever Chrome is installed on the host.
 
@@ -345,3 +355,17 @@ A GitHub Actions workflow at `.github/workflows/ci.yml` runs a compile-only
 build on every push / PR using JDK 17. Full UI tests are not executed on CI
 (they require an Android emulator with hardware acceleration) and are
 intended to be run locally or on a self-hosted runner with Docker + KVM.
+
+### Maven commands (reference)
+
+| Context | Command | Notes |
+|---|---|---|
+| Local UI suite | `mvn test` | After `docker compose up -d`. Host Chrome + Appium in Docker. |
+| Local, Chrome in Docker | `mvn test -Pdockerized-web` | After `docker compose --profile web up -d`. Sets `SELENIUM_REMOTE_URL` and `appium.app`. |
+| Override APK from CLI | `mvn test -Dappium.app=/home/androidusr/apks/other.apk` | Optional; omit `-Dappium.app` to keep env / default resolution. |
+| CI (workflow) | `mvn -B -ntp clean test-compile` | Compiles main + test sources, no UI run. |
+| CI (workflow) | `mvn -B -ntp -DskipTests package` | Produces the jar; skips TestNG. |
+
+Self-hosted runners that replicate the full stack can reuse the same local
+commands, for example `mvn -B -ntp test -Pdockerized-web` once the compose
+services are healthy.

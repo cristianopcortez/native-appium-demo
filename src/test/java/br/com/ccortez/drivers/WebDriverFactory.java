@@ -1,5 +1,6 @@
 package br.com.ccortez.drivers;
 
+import br.com.ccortez.config.DriverTestConfig;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,9 +19,10 @@ import java.net.URL;
  *     host's Chrome installation, with the driver binary resolved by
  *     WebDriverManager. This is the fastest dev-loop option on developer
  *     machines.</li>
- *     <li><b>Remote</b>: when {@code SELENIUM_REMOTE_URL} is set (as a system
- *     property or environment variable), a {@link RemoteWebDriver} is created
- *     pointing at that URL. This is used with the {@code selenium-chrome}
+ *     <li><b>Remote</b>: when {@link DriverTestConfig#seleniumRemoteUrl()} is
+ *     non-null (system property or environment variable
+ *     {@link DriverTestConfig#SELENIUM_REMOTE_URL_KEY}), a {@link RemoteWebDriver}
+ *     is created pointing at that URL. This is used with the {@code selenium-chrome}
  *     service in {@code docker-compose.yml} to run Chrome fully containerised,
  *     which gives a reproducible browser version for CI.</li>
  * </ul>
@@ -29,7 +31,8 @@ import java.net.URL;
  */
 public final class WebDriverFactory {
 
-    public static final String REMOTE_URL_KEY = "SELENIUM_REMOTE_URL";
+    /** @see DriverTestConfig#SELENIUM_REMOTE_URL_KEY */
+    public static final String REMOTE_URL_KEY = DriverTestConfig.SELENIUM_REMOTE_URL_KEY;
 
     private WebDriverFactory() {
     }
@@ -47,7 +50,7 @@ public final class WebDriverFactory {
      * {@link ChromeOptions} (e.g. add {@code --headless=new}).
      */
     public static WebDriver createChromeDriver(ChromeOptions options) {
-        String remoteUrl = resolve(REMOTE_URL_KEY);
+        String remoteUrl = DriverTestConfig.seleniumRemoteUrl();
 
         if (remoteUrl == null || remoteUrl.isBlank()) {
             WebDriverManager.chromedriver().setup();
@@ -60,13 +63,5 @@ public final class WebDriverFactory {
             throw new IllegalArgumentException(
                     "Invalid " + REMOTE_URL_KEY + ": " + remoteUrl, e);
         }
-    }
-
-    private static String resolve(String key) {
-        String value = System.getProperty(key);
-        if (value != null && !value.isBlank()) {
-            return value;
-        }
-        return System.getenv(key);
     }
 }

@@ -1,5 +1,6 @@
 package br.com.ccortez.drivers;
 
+import br.com.ccortez.config.DriverTestConfig;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 
@@ -16,9 +17,10 @@ import java.util.Optional;
  * APK and keystore paths below are as seen from <strong>inside</strong> that
  * container, after the volume mounts declared in the compose file.</p>
  *
- * <p>Secrets and environment-specific values are read from environment
- * variables when available and fall back to sensible defaults, so the suite
- * can be run both locally and on CI without code changes.</p>
+ * <p>The APK path sent to Appium is resolved by {@link br.com.ccortez.config.DriverTestConfig}
+ * (system property {@link br.com.ccortez.config.DriverTestConfig#APPIUM_APP_KEY}, then
+ * {@code APK_PATH_IN_CONTAINER}, then an in-container default). Other secrets and
+ * device settings use environment variables with sensible defaults.</p>
  */
 public class AndroidDriverManager {
 
@@ -38,8 +40,6 @@ public class AndroidDriverManager {
     //   ./config -> /home/androidusr/config
     // under the androidusr home because the Appium server inside the
     // container runs as that user and cannot read /root (mode 700).
-    private static final String APK_PATH_IN_CONTAINER =
-            envOrDefault("APK_PATH_IN_CONTAINER", "/home/androidusr/apks/app-debug.apk");
     private static final String KEYSTORE_PATH_IN_CONTAINER =
             envOrDefault("KEYSTORE_PATH_IN_CONTAINER", "/home/androidusr/config/my-debug-keystore.jks");
 
@@ -104,7 +104,7 @@ public class AndroidDriverManager {
         options.setPlatformVersion(PLATFORM_VERSION);
         options.setCapability("appium:deviceName", DEVICE_NAME);
 
-        options.setApp(APK_PATH_IN_CONTAINER);
+        options.setApp(DriverTestConfig.appiumAppPath());
         options.setCapability("appium:forceAppiumRebuild", true);
         options.setCapability("appium:espressoBuildConfig", ESPRESSO_BUILD_CONFIG_JSON);
 
