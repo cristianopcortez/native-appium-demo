@@ -51,3 +51,6 @@ config/additional-android-test-dependencies.json
 !apks/.gitkeep
 !config/.gitkeep
 !config/*.example.json
+
+### Test screenshots (written to repo root cwd by AndroidAppTests#takeScreenshot) ###
+screen_before_title_check_simplified.png
