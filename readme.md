@@ -247,7 +247,7 @@ Wait for `selenium-chrome` to be ready before firing the suite — the
 container publishes a readiness endpoint on `/status`:
 
 ```powershell
-docker compose ps                                    # both should show "Up"
+docker compose --profile web ps                       # both should show "Up"
 curl http://localhost:4444/status                    # "ready": true
 ```
 
@@ -268,6 +268,14 @@ open **<http://localhost:7900/>** in a normal browser — that is the
 container’s **noVNC** viewer (same idea as the Android emulator at port 6080).
 Log in with password `secret` to see Chrome open, navigate, and tear down as
 each test runs.
+
+**Selenium Grid UI on port 4444:** the standalone image also exposes a web
+dashboard. Open **<http://localhost:4444/>** or **<http://localhost:4444/ui/>**
+(note the **trailing slash** on `/ui/` — without it some browsers load a blank
+page because `index.js` is requested from the wrong path). That UI does **not**
+use the noVNC password; authentication is only for **<http://localhost:7900/>**
+above. Replace `localhost` with your machine’s LAN hostname or IP only if you
+open the URLs from another device on the same network.
 
 ### Running from IntelliJ
 
@@ -366,9 +374,28 @@ with `docker compose down -v && docker compose up -d`.
 **Mode B: `Connection refused` / `WebDriverException: ... 4444`**
 The `selenium-chrome` container is not running. Either you skipped
 `--profile web` when starting the stack, or the container crashed. Check
-with `docker compose ps` — if `selenium-chrome` is missing, start it with
-`docker compose --profile web up -d`; if it's in a restart loop, inspect
-logs via `docker compose logs selenium-chrome`.
+with `docker compose --profile web ps` — if `selenium-chrome` is missing
+or not `Up`, start it with `docker compose --profile web up -d`; if it's
+in a restart loop, inspect logs via `docker compose logs selenium-chrome`.
+
+**Mode B: `failed to set up container networking: network … not found`**
+An old `selenium-chrome` container can outlive its Compose network (for
+example after `docker compose down`, `docker network prune`, or a Docker
+Desktop restart). Compose may reuse that container on the next
+`docker compose --profile web up -d`, but **starting** it fails because
+the attached network ID no longer exists — so port 4444 never comes up.
+Remove the stale container and recreate it:
+
+```powershell
+docker rm -f selenium-chrome
+docker compose --profile web up -d
+```
+
+Alternatively: `docker compose --profile web up -d --force-recreate selenium-chrome`.
+Containers that exit with code **137** were often killed by the OOM killer or
+a hard stop; if that keeps happening, raise Docker Desktop memory limits or
+avoid running the Android emulator and Selenium Chrome concurrently on a
+small machine.
 
 **Mode B: `mvn test` runs but uses the host Chrome anyway**
 You forgot the `-Pdockerized-web` profile, so `SELENIUM_REMOTE_URL` was

@@ -37,6 +37,8 @@ public class BaseMixedDriverTest {
     @AfterClass(alwaysRun = true)
     public void tearDown() {
         quit();
-        this.driverManager.quitDriver();
+        if (this.driverManager != null) {
+            this.driverManager.quitDriver();
+        }
     }
 }
