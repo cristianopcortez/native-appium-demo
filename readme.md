@@ -136,12 +136,16 @@ no machine-specific paths hard-coded.
 6. **Shut everything down** when you are done:
 
    ```powershell
-   docker compose down
+   docker compose --profile web down
    ```
 
-   `docker compose down` stops _every_ container started by this project,
-   including the optional `selenium-chrome` service from Mode B — you do not
-   need to repeat `--profile web` to tear it down.
+   The `--profile web` flag tells Compose to also stop the `selenium-chrome`
+   container if it is running (Mode B). It is safe to always use this form —
+   Compose simply skips the container when it was never started (Mode A only).
+   Plain `docker compose down` (without the profile flag) leaves
+   `selenium-chrome` running when Mode B was active, which keeps the
+   Compose-managed network alive and produces a
+   _"Resource is still in use"_ warning at teardown.
 
 ---
 
@@ -392,6 +396,25 @@ You likely pinned `toolsVersions.gradle` or `toolsVersions.androidGradlePlugin` 
 Open <http://localhost:6080> to see what the emulator is doing. On Windows
 without KVM the first boot is slow; allow up to 3 minutes. Remove stale state
 with `docker compose down -v && docker compose up -d`.
+
+**`docker compose down` — "Network … Resource is still in use"**
+This warning appears when `selenium-chrome` is still running at teardown time.
+Plain `docker compose down` does not stop services that are behind a non-active
+Compose profile, so `selenium-chrome` (profile `web`) keeps the shared network
+alive. Fix: always tear down with the profile flag included:
+
+```powershell
+docker compose --profile web down
+```
+
+If you already ran a plain `docker compose down` and the network is stuck, stop
+the orphan container and remove the network manually:
+
+```powershell
+docker stop selenium-chrome
+docker rm selenium-chrome
+docker network prune     # or: docker network rm native-appium-demo_default
+```
 
 **Mode B: `Connection refused` / `WebDriverException: ... 4444`**
 The `selenium-chrome` container is not running. Either you skipped
