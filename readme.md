@@ -1,4 +1,4 @@
-# native-appium-demo
+﻿# native-appium-demo
 
 End-to-end test suite that drives a native Android app (Jetpack Compose) and a
 companion web page from a single JVM process, using **Appium 2 + Espresso**
@@ -286,7 +286,7 @@ the `selenium/standalone-chrome` container so its version is pinned and
 decoupled from whatever Chrome is installed on the host.
 
 **Watching the web tests (Mode B):** while `mvn test -Pdockerized-web` runs,
-open **<http://localhost:7900/>** in a normal browser — that is the
+open **<http://localhost:7900/>** (password: `secret`) in a normal browser — that is the
 container’s **noVNC** viewer (same idea as the Android emulator at port 6080).
 Log in with password `secret` to see Chrome open, navigate, and tear down as
 each test runs.
@@ -295,7 +295,7 @@ each test runs.
 dashboard. Open **<http://localhost:4444/>** or **<http://localhost:4444/ui/>**
 (note the **trailing slash** on `/ui/` — without it some browsers load a blank
 page because `index.js` is requested from the wrong path). That UI does **not**
-use the noVNC password; authentication is only for **<http://localhost:7900/>**
+use the noVNC password (`secret`); authentication is only for **<http://localhost:7900/>**
 above. Replace `localhost` with your machine’s LAN hostname or IP only if you
 open the URLs from another device on the same network.
 
