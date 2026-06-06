@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class RiderOptionsPage {
 
-    private static final String APP_ID = "br.com.ccortez.desafioshopperapptaxi:id/";
+    private static final String APP_ID = "br.com.ccortez.taxi:id/";
 
     private final AndroidDriver driver;
     private final WebDriverWait wait;

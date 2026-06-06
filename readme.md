@@ -33,6 +33,8 @@ no machine-specific paths hard-coded.
 ├── emulator.py                # Patched emulator launcher (graceful no-KVM fallback)
 ├── pom.xml                    # Java 17 / Appium / Selenium / TestNG deps
 ├── testng.xml                 # TestNG suite definition
+├── copy-apk.bat               # Windows: copies app-debug.apk from ../Taxi build output
+├── copy-apk.sh                # Git Bash / WSL / Linux: same as above
 ├── apks/                      # (gitignored) drop app-debug.apk here
 ├── config/                    # (gitignored) drop my-debug-keystore.jks here
 │   └── espresso-build-config.example.json
@@ -68,7 +70,27 @@ no machine-specific paths hard-coded.
 1. **Clone and open the project** in IntelliJ IDEA. Make sure the Project SDK
    is set to JDK 17 (see _File → Project Structure → Project_).
 
-2. **Drop the APK** you want to test into `./apks/`:
+2. **Copy the APK** you want to test into `./apks/`.
+
+   Clone the [Taxi](https://github.com/cristianopcortez/Taxi) repository alongside
+   this one (both repos share the same parent folder), build the APK, and use the
+   helper script to copy it in one step:
+
+   ```powershell
+   # Windows PowerShell / CMD
+   .\copy-apk.bat
+   ```
+
+   ```bash
+   # Git Bash / WSL / Linux / macOS
+   bash copy-apk.sh
+   ```
+
+   Both scripts look for the APK at `<ANDROID_PROJECT>/app/debug/app-debug.apk`.
+   Edit the `ANDROID_PROJECT` variable at the top of the script to point to the
+   root folder of your Android app.
+
+   You can also copy the file manually:
 
    ```
    apks/

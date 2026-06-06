@@ -79,21 +79,20 @@ public class AndroidDriverManager {
             +     "\"keyPassword\":\"" + KEY_PASSWORD + "\""
             + "},"
             + "\"additionalAndroidTestDependencies\":["
-            +     "\"androidx.activity:activity:1.9.0\","
-            +     "\"androidx.activity:activity-compose:1.8.2\","
-            +     "\"androidx.lifecycle:lifecycle-extensions:2.2.0\","
+            +     "\"androidx.activity:activity:1.10.1\","
+            +     "\"androidx.activity:activity-compose:1.10.1\","
             +     "\"androidx.fragment:fragment:1.5.1\","
-            +     "\"androidx.compose.ui:ui:1.7.5\","
-            +     "\"androidx.compose.ui:ui-graphics:1.7.5\","
-            +     "\"androidx.compose.ui:ui-tooling:1.7.5\","
-            +     "\"androidx.compose.ui:ui-tooling-preview:1.7.5\","
-            +     "\"androidx.compose.material:material:1.7.5\","
-            +     "\"androidx.compose.material3:material3:1.3.1\","
-            +     "\"androidx.compose.runtime:runtime:1.7.5\","
-            +     "\"androidx.compose.runtime:runtime-android:1.7.5\","
-            +     "\"androidx.navigation:navigation-compose:2.7.7\","
-            +     "\"androidx.compose.ui:ui-test-junit4:1.7.5\","
-            +     "\"androidx.compose.ui:ui-test-manifest:1.7.5\""
+            +     "\"androidx.compose.ui:ui:1.11.0\","
+            +     "\"androidx.compose.ui:ui-graphics:1.11.0\","
+            +     "\"androidx.compose.ui:ui-tooling:1.11.0\","
+            +     "\"androidx.compose.ui:ui-tooling-preview:1.11.0\","
+            +     "\"androidx.compose.material:material:1.7.8\","
+            +     "\"androidx.compose.material3:material3:1.4.0\","
+            +     "\"androidx.compose.runtime:runtime:1.11.0\","
+            +     "\"androidx.compose.runtime:runtime-android:1.11.0\","
+            +     "\"androidx.navigation:navigation-compose:2.9.0\","
+            +     "\"androidx.compose.ui:ui-test-junit4:1.11.0\","
+            +     "\"androidx.compose.ui:ui-test-manifest:1.11.0\""
             + "]"
             + "}";
 
@@ -112,6 +111,7 @@ public class AndroidDriverManager {
         options.setApp(DriverTestConfig.appiumAppPath());
         options.setCapability("appium:forceAppiumRebuild", true);
         options.setCapability("appium:espressoBuildConfig", ESPRESSO_BUILD_CONFIG_JSON);
+        options.setCapability("appium:espressoServerLaunchTimeout", 120000);
 
         options.setNewCommandTimeout(Duration.ofSeconds(300));
 
