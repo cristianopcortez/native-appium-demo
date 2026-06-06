@@ -57,21 +57,25 @@ public class AndroidDriverManager {
      * so we embed it here to keep the suite fully self-contained.
      *
      * <p>The test-APK that Appium rebuilds must be signed with the same key
-     * as the app under test, hence the {@code signingConfig} block. The
-     * {@code additionalAndroidTestDependencies} list mirrors the Compose /
-     * AndroidX versions used by {@code DesafioShopperAppTaxi} (1.7.5).</p>
+     * as the app under test, hence the {@code signingConfig} block.</p>
      *
-     * <p>We intentionally omit {@code toolsVersions} ({@code gradle},
-     * {@code androidGradlePlugin}, etc.): the Espresso server is built from the
-     * driver's bundled {@code espresso-server} project (Gradle/AGP pinned there),
-     * not from the app under test's Gradle tree. Overriding those versions to
-     * match the app's AGP (e.g. 8.6) conflicts with Espresso driver 8.x defaults
-     * (Gradle 9 + AGP 9) and breaks the server build in {@code /tmp/espresso-server-*}.
-     * Align dependency coordinates via {@code additionalAndroidTestDependencies}
-     * instead.</p>
+     * <p>{@code toolsVersions.compileSdk} and {@code toolsVersions.kotlin} are
+     * set explicitly here because the {@code additionalAndroidTestDependencies}
+     * below pull in AndroidX / Compose libraries that require at least API 35 and
+     * Kotlin 2.x. Without these overrides Appium would use the driver's bundled
+     * {@code gradle.properties} defaults ({@code compileSdk=34}, {@code kotlin=1.8.10}),
+     * causing the Gradle {@code checkDebugAndroidTestAarMetadata} task to fail.
+     * Gradle/AGP are intentionally left at the driver's bundled defaults.</p>
+     *
+     * <p>The {@code additionalAndroidTestDependencies} list mirrors the Compose /
+     * AndroidX versions used by {@code DesafioShopperAppTaxi}.</p>
      */
     private static final String ESPRESSO_BUILD_CONFIG_JSON = ""
             + "{"
+            + "\"toolsVersions\":{"
+            +     "\"compileSdk\":35,"
+            +     "\"kotlin\":\"2.1.20\""
+            + "},"
             + "\"signingConfig\":{"
             +     "\"storeFile\":\"" + KEYSTORE_PATH_IN_CONTAINER + "\","
             +     "\"storePassword\":\"" + KEYSTORE_PASSWORD + "\","
